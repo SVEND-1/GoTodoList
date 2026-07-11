@@ -22,6 +22,7 @@ func (r *UserRepository) GetUsers(ctx context.Context, limit *int, offset *int) 
 		return nil, fmt.Errorf("select users: %w", err)
 	}
 	defer rows.Close()
+
 	var users []UserEntity
 	for rows.Next() {
 		var user UserEntity
@@ -31,9 +32,11 @@ func (r *UserRepository) GetUsers(ctx context.Context, limit *int, offset *int) 
 		}
 		users = append(users, user)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows: %w", err)
 	}
 	userDomains := convertUserDomainsFromEntities(users)
+
 	return userDomains, nil
 }

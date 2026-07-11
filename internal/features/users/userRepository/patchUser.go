@@ -3,8 +3,8 @@ package userRepository
 import (
 	"TodoList/internal/core/domain"
 	core_errors "TodoList/internal/core/errors"
+	"TodoList/internal/core/repository/pool/postgres"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -27,17 +27,20 @@ func (r *UserRepository) PatchUser(ctx context.Context, id int, user domain.User
 		&userEntity.PhoneNum,
 		&userEntity.Version,
 	)
+
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, postgres.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("user with id=%d concurrently accessed: %w", id, core_errors.ErrConflict)
 		}
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
+
 	userDomain := domain.User{
 		userEntity.ID,
 		userEntity.Version,
 		userEntity.FullName,
 		userEntity.PhoneNum,
 	}
+
 	return userDomain, nil
 }

@@ -1,4 +1,4 @@
-package userApi
+package taskApi
 
 import (
 	"TodoList/internal/core/logger"
@@ -7,19 +7,19 @@ import (
 	"net/http"
 )
 
-func (c *UserController) DeleteUser(rw http.ResponseWriter, r *http.Request) {
+func (c *TaskController) DeleteTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
 	responseHandler := response.NewHTTPResponseHandler(log, rw)
 
-	userId, err := requests.GetIntPathValue(r, "id")
+	taskId, err := requests.GetIntPathValue(r, "id")
 	if err != nil {
-		responseHandler.ErrorResponse(err, "failed to get id path value")
+		responseHandler.ErrorResponse(err, "failed to get taskId patch value")
 		return
 	}
 
-	if err := c.UserService.DeleteUser(ctx, userId); err != nil {
-		responseHandler.ErrorResponse(err, "failed to delete user")
+	if err := c.taskService.DeleteTask(ctx, taskId); err != nil {
+		responseHandler.ErrorResponse(err, "failed to delete task")
 		return
 	}
 	responseHandler.NoContentResponse()

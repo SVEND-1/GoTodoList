@@ -2,8 +2,8 @@ package userApi
 
 import (
 	"TodoList/internal/core/logger"
+	"TodoList/internal/core/transport/http/requests"
 	"TodoList/internal/core/transport/http/response"
-	"TodoList/internal/core/transport/http/utils"
 	"fmt"
 	"net/http"
 )
@@ -32,12 +32,16 @@ func (c *UserController) GetUsers(rw http.ResponseWriter, r *http.Request) {
 }
 
 func getLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
-	limit, err := utils.GetIntQueryParams(r, "limit")
+	const (
+		limitQueryParamKey  = "limit"
+		offsetQueryParamKey = "offset"
+	)
+	limit, err := requests.GetIntQueryParams(r, limitQueryParamKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get limit query param: %w", err)
 	}
 
-	offset, err := utils.GetIntQueryParams(r, "offset")
+	offset, err := requests.GetIntQueryParams(r, offsetQueryParamKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get offset query param: %w", err)
 	}

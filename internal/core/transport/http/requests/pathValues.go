@@ -1,4 +1,4 @@
-package utils
+package requests
 
 import (
 	core_errors "TodoList/internal/core/errors"

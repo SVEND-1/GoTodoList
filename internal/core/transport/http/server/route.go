@@ -1,17 +1,20 @@
 package server
 
-import "net/http"
+import (
+	"TodoList/internal/core/transport/http/middleware"
+	"net/http"
+)
 
 type Route struct {
-	Method  string
-	Path    string
-	Handler http.HandlerFunc
+	Method     string
+	Path       string
+	Handler    http.HandlerFunc
+	Middleware []middleware.Middleware
 }
 
-func NewRoure(method, path string, handler http.HandlerFunc) Route {
-	return Route{
-		Method:  method,
-		Path:    path,
-		Handler: handler,
-	}
+func (r *Route) WithMiddleware() http.Handler {
+	return middleware.ChainMiddleware(
+		r.Handler,
+		r.Middleware...,
+	)
 }

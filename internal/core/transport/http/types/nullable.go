@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 )
 
+/*
+-Чтобы отличать пустое значение от не переданного значения
+*/
 type Nullable[T any] struct {
 	domain.Nullable[T]
 }
@@ -23,6 +26,7 @@ func (n *Nullable[T]) UnmarshalJSON(b []byte) error {
 	n.Value = &value
 	return nil
 }
+
 func (n *Nullable[T]) ToDomain() domain.Nullable[T] {
 	return domain.Nullable[T]{
 		Value: n.Value,

@@ -1,4 +1,4 @@
-package userService
+package taskService
 
 import (
 	"TodoList/internal/core/domain"
@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func (s *UserService) GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error) {
+func (s *TaskService) GetTasks(ctx context.Context, userId *int, limit *int, offset *int) ([]domain.Task, error) {
 	if limit != nil && *limit < 0 {
 		return nil, fmt.Errorf("limit must be negative: %w", core_errors.ErrInvalidArgument)
 	}
@@ -16,9 +16,9 @@ func (s *UserService) GetUsers(ctx context.Context, limit *int, offset *int) ([]
 		return nil, fmt.Errorf("offset must be negative: %w", core_errors.ErrInvalidArgument)
 	}
 
-	users, err := s.userRepository.GetUsers(ctx, limit, offset)
+	tasks, err := s.taskRepository.GetTasks(ctx, userId, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get users from repository: %w", err)
+		return nil, fmt.Errorf("failed to get tasks from repository: %w", err)
 	}
-	return users, nil
+	return tasks, nil
 }

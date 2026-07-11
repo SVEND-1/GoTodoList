@@ -6,7 +6,6 @@ import (
 	"TodoList/internal/core/transport/http/requests"
 	"TodoList/internal/core/transport/http/response"
 	core_types "TodoList/internal/core/transport/http/types"
-	"TodoList/internal/core/transport/http/utils"
 	"fmt"
 	"net/http"
 	"strings"
@@ -51,7 +50,7 @@ func (c *UserController) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	responseHandler := response.NewHTTPResponseHandler(log, rw)
 
-	userId, err := utils.GetIntPathValue(r, "id")
+	userId, err := requests.GetIntPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err, "failed to parse userId",
@@ -75,18 +74,20 @@ func (c *UserController) PatchUser(rw http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
 	log.Debug("userDomain before response",
 		zap.Int("id", userDomain.Id),
 		zap.String("fullName", userDomain.FullName),
 		zap.Any("phoneNumber", userDomain.PhoneNumber), // покажет nil или значение
 	)
+
 	response := PatchUserResponse(convertUserDTOFromDomain(userDomain))
 	responseHandler.JsonResponse(response, http.StatusOK)
 }
 
 func convertUserPatchFromRequest(request PatchUserRequest) domain.UserPatch {
-	return domain.UserPatch{
-		FullName:    request.FullName.ToDomain(),
-		PhoneNumber: request.Phone_number.ToDomain(),
-	}
+	return domain.NewUserPatch(
+		request.FullName.ToDomain(),
+		request.Phone_number.ToDomain(),
+	)
 }

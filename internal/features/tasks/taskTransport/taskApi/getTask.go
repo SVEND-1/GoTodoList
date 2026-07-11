@@ -1,0 +1,29 @@
+package taskApi
+
+import (
+	"TodoList/internal/core/logger"
+	"TodoList/internal/core/transport/http/requests"
+	"TodoList/internal/core/transport/http/response"
+	"net/http"
+)
+
+type TaskResponse TaskResponseDTO
+
+func (c *TaskController) GetTask(rw http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := logger.FromContext(ctx)
+	responseHandler := response.NewHTTPResponseHandler(log, rw)
+	taskId, err := requests.GetIntPathValue(r, "id")
+	if err != nil {
+		responseHandler.ErrorResponse(err, "failed to get taskId patch value")
+		return
+	}
+
+	taskDomain, err := c.taskService.GetTask(ctx, taskId)
+	if err != nil {
+		responseHandler.ErrorResponse(err, "failed to get task")
+		return
+	}
+	response := TaskResponse(taskDomain)
+	responseHandler.JsonResponse(response, http.StatusOK)
+}

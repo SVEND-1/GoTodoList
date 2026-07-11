@@ -1,11 +1,13 @@
 package userRepository
 
-import "TodoList/internal/core/repository/conn"
+import (
+	"TodoList/internal/core/repository/pool/postgres"
+)
 
 type UserRepository struct {
-	pool conn.Pool
+	pool postgres.Pool
 }
 
-func NewUserRepository(pool conn.Pool) *UserRepository {
+func NewUserRepository(pool postgres.Pool) *UserRepository {
 	return &UserRepository{pool: pool}
 }

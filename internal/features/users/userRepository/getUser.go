@@ -3,8 +3,8 @@ package userRepository
 import (
 	"TodoList/internal/core/domain"
 	core_errors "TodoList/internal/core/errors"
+	"TodoList/internal/core/repository/pool/postgres"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -27,7 +27,7 @@ func (r *UserRepository) GetUser(ctx context.Context, id int) (domain.User, erro
 	)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, postgres.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("user with id=%d: %w", id, core_errors.ErrNotFound)
 		}
 		return domain.User{}, fmt.Errorf("scan error: %w", err)

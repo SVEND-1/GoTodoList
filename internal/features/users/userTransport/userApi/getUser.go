@@ -2,8 +2,8 @@ package userApi
 
 import (
 	"TodoList/internal/core/logger"
+	"TodoList/internal/core/transport/http/requests"
 	"TodoList/internal/core/transport/http/response"
-	"TodoList/internal/core/transport/http/utils"
 	"net/http"
 )
 
@@ -14,7 +14,7 @@ func (c *UserController) GetUser(rw http.ResponseWriter, r *http.Request) {
 	log := logger.FromContext(ctx)
 	responseHandler := response.NewHTTPResponseHandler(log, rw)
 
-	userId, err := utils.GetIntPathValue(r, "id")
+	userId, err := requests.GetIntPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err, "User Id is required",

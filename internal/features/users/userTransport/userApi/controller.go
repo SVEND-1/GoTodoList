@@ -24,6 +24,7 @@ func NewUserController(userService UserService) *UserController {
 		UserService: userService,
 	}
 }
+
 func (c *UserController) Routers() []server.Route {
 	return []server.Route{
 		{
