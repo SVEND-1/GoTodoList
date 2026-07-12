@@ -6,6 +6,9 @@ import (
 	"TodoList/internal/core/repository/pool/postgres/core_pgx"
 	"TodoList/internal/core/transport/http/middleware"
 	"TodoList/internal/core/transport/http/server"
+	"TodoList/internal/features/statistics/statRepository"
+	"TodoList/internal/features/statistics/statService"
+	"TodoList/internal/features/statistics/statTransport/statApi"
 	"TodoList/internal/features/tasks/taskRepository"
 	"TodoList/internal/features/tasks/taskService"
 	"TodoList/internal/features/tasks/taskTransport/taskApi"
@@ -20,8 +23,15 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	_ "TodoList/docs"
 )
 
+// @title Goland TodoApp API
+// @version 1.0
+// @description application todoApp Rest-api
+// @host localhost:5050
+// @BasePath /api/v1
 func main() {
 	config := config.NewConfigMust()
 	time.Local = config.TimeZone
@@ -53,9 +63,15 @@ func main() {
 	taskService := taskService.NewTaskService(taskPostgresRepository)
 	taskTransportHttp := taskApi.NewTaskController(taskService)
 
+	log.Debug("Initializing feature", zap.String("feature", "statistics"))
+	statisticsPostgresRepository := statRepository.NewStatisticsRepository(pool)
+	statisticsService := statService.NewStatisticsService(statisticsPostgresRepository)
+	statisticsTransportHttp := statApi.NewStatisticsController(statisticsService)
+
 	log.Debug("Initializing http server")
 	httpServer := server.NewHTTPServer(
 		server.NewConfigMust(), log,
+		middleware.CORS(),
 		middleware.RequestID(),
 		middleware.Logger(log),
 		middleware.Trace(),
@@ -66,8 +82,10 @@ func main() {
 
 	apiVersionRouter.RegisterRouters(userTransportHttp.Routers()...)
 	apiVersionRouter.RegisterRouters(taskTransportHttp.Routers()...)
+	apiVersionRouter.RegisterRouters(statisticsTransportHttp.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Error("HTTP server run, err=", zap.Error(err))

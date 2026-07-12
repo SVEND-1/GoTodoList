@@ -14,8 +14,9 @@ import (
 )
 
 type PatchUserRequest struct {
-	FullName     core_types.Nullable[string] `json:"full_name"` //Валидировать можно только от go переменные,а не кастомные,но можно научить
-	Phone_number core_types.Nullable[string] `json:"phone_number"`
+	//Валидировать можно только от go переменные,а не кастомные,но можно научить
+	FullName     core_types.Nullable[string] `json:"full_name" swaggertype:"string" example:"Петрович"`
+	Phone_number core_types.Nullable[string] `json:"phone_number" swaggertype:"string" example:"+79994443322"`
 }
 
 func (r PatchUserRequest) Validate() error {
@@ -45,6 +46,25 @@ func (r PatchUserRequest) Validate() error {
 
 type PatchUserResponse UserDTOResponse
 
+// PatchUser 	godoc
+// @Summary 	Изменения пользователя
+// @Description Изменения информации о пользователе
+// @Description ### Логика обновления полей:
+// @Description 1.**Поле не переданно** значение в бд не меняется
+// @Description 2.**Передан null** удаление поля из бд
+// @Description 3.**Передано значение** обновление в бд
+// @Description 3.**full_name** не может быть null
+// @Tags 		Users
+// @Accept 		json
+// @Produce 	json
+// @Param		id path int true 					"ID пользователя"
+// @Param		request body PatchUserRequest true 	"Тело запроса"
+// @Success 	200 {object} PatchUserResponse 		"Успешно измененый пользователь"
+// @Failure 	400 {object} response.ErrorResponse "Bad request"
+// @Failure 	404 {object} response.ErrorResponse "User not found"
+// @Failure 	409 {object} response.ErrorResponse "Conflict"
+// @Failure 	500 {object} response.ErrorResponse "Internal server error"
+// @Router 		/users/{id} [patch]
 func (c *UserController) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)

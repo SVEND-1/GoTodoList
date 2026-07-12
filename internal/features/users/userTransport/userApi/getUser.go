@@ -9,6 +9,17 @@ import (
 
 type GetUserResponse UserDTOResponse
 
+// GetUser 	godoc
+// @Summary 	Получение пользователя
+// @Description Получение пользователя по id
+// @Tags 		Users
+// @Produce 	json
+// @Param		id path int true 					"ID пользователя"
+// @Success 	200 {object} GetUserResponse 		"Успешно найден пользователь по Id"
+// @Failure 	400 {object} response.ErrorResponse "Bad request"
+// @Failure 	404 {object} response.ErrorResponse "User not found"
+// @Failure 	500 {object} response.ErrorResponse "Internal server error"
+// @Router 		/users/{id} [get]
 func (c *UserController) GetUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)

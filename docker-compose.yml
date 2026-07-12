@@ -23,3 +23,15 @@ services:
     command: tcp-listen:5433, fork, reuseaddr tcp-connect:todoapp-postgres:5433
     ports:
       - "127.0.0.1:5433:5432"
+
+  swagger:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM golang:1.26.4-alpine
+        RUN apk add --no-cache git
+        RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+        WORKDIR /code
+        ENTRYPOINT ["swag"]
+    volumes:
+      - .:/code

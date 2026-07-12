@@ -7,6 +7,17 @@ import (
 	"net/http"
 )
 
+// DeleteTask 	godoc
+// @Summary 	Удаление задачи
+// @Description Удалить задачу в системе
+// @Tags 		Tasks
+// @Produce 	json
+// @Param 		id path int true 					"ID задачи"
+// @Success 	204 								"Успешно удаленная задача по Id"
+// @Failure 	400 {object} response.ErrorResponse "Bad request"
+// @Failure 	404 {object} response.ErrorResponse "Task not found"
+// @Failure 	500 {object} response.ErrorResponse "Internal server error"
+// @Router 		/tasks/{id} [delete]
 func (c *TaskController) DeleteTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)

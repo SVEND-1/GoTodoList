@@ -11,9 +11,9 @@ import (
 )
 
 type TaskPatchRequest struct {
-	Title       core_types.Nullable[string] `json:"title"`
-	Description core_types.Nullable[string] `json:"description"`
-	Completed   core_types.Nullable[bool]   `json:"completed"`
+	Title       core_types.Nullable[string] `json:"title" swaggertype:"string" example:"Стать java/go senior"`
+	Description core_types.Nullable[string] `json:"description" swaggertype:"string" example:"Стать java/go senior,но уже за 20 минут"`
+	Completed   core_types.Nullable[bool]   `json:"completed" swaggertype:"boolean" example:"true"`
 }
 
 func (r *TaskPatchRequest) Validate() error {
@@ -47,6 +47,25 @@ func (r *TaskPatchRequest) Validate() error {
 
 type TaskPatchResponse TaskResponseDTO
 
+// PatchTask 	godoc
+// @Summary 	Изменение задачи
+// @Description Изменение информации о задаче
+// @Description ### Логика обновления полей:
+// @Description 1.**Поле не переданно** значение в бд не меняется
+// @Description 2.**Передан null** удаление поля из бд (для title/completed недопустимо)
+// @Description 3.**Передано значение** обновление в бд
+// @Description 3.**title** и **completed** не могут быть null
+// @Tags 		Tasks
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true 					"ID задачи"
+// @Param 		request body TaskPatchRequest true 	"Тело запроса"
+// @Success 	200 {object} TaskPatchResponse 		"Успешно измененная задача"
+// @Failure 	400 {object} response.ErrorResponse "Bad request"
+// @Failure 	404 {object} response.ErrorResponse "Task not found"
+// @Failure 	409 {object} response.ErrorResponse "Conflict"
+// @Failure 	500 {object} response.ErrorResponse "Internal server error"
+// @Router 		/tasks/{id} [patch]
 func (c *TaskController) PatchTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logger.FromContext(ctx)
