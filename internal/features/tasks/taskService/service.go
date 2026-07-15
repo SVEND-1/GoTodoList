@@ -9,6 +9,7 @@ type TaskService struct {
 	taskRepository TaskRepository
 }
 
+//go:generate go run github.com/golang/mock/mockgen@v1.6.0 -source=service.go -destination=mocks/mock_task_service.go -package=mocks
 type TaskRepository interface {
 	CreateTask(ctx context.Context, task domain.Task) (domain.Task, error)
 	GetTasks(ctx context.Context, userId *int, limit *int, offset *int) ([]domain.Task, error)
