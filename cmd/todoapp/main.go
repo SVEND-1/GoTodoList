@@ -22,9 +22,9 @@ import (
 	"syscall"
 	"time"
 
-	"go.uber.org/zap"
-
 	_ "TodoList/docs"
+
+	"go.uber.org/zap"
 )
 
 // @title Goland TodoApp API
@@ -52,6 +52,11 @@ func main() {
 		log.Fatal("failed to init postgres connection poll", zap.Error(err))
 	}
 	defer pool.Close()
+
+	//На будущее готовый email
+	//templateService := &notifyService.TemplateServiceImp{}
+	//dialer := gomail.NewDialer(config.Email.Host, config.Email.Port, config.Email.Username, config.Email.Password)
+	//emailService := notifyService.NewEmailSenderService(dialer, templateService, config.Email.FromEmail)
 
 	log.Debug("Initialing feature", zap.String("feature", "user"))
 	userPostgresRepository := userRepository.NewUserRepository(pool)
