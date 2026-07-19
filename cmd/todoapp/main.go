@@ -2,10 +2,15 @@ package main
 
 import (
 	"TodoList/internal/core/config"
+	"TodoList/internal/core/domain"
 	"TodoList/internal/core/logger"
 	"TodoList/internal/core/repository/pool/postgres/core_pgx"
 	"TodoList/internal/core/transport/http/middleware"
 	"TodoList/internal/core/transport/http/server"
+	"TodoList/internal/features/auth/authRepository"
+	"TodoList/internal/features/auth/authService"
+	"TodoList/internal/features/auth/authService/jwt"
+	"TodoList/internal/features/auth/authTransport/authApi"
 	"TodoList/internal/features/statistics/statRepository"
 	"TodoList/internal/features/statistics/statService"
 	"TodoList/internal/features/statistics/statTransport/statApi"
@@ -58,6 +63,12 @@ func main() {
 	//dialer := gomail.NewDialer(config.Email.Host, config.Email.Port, config.Email.Username, config.Email.Password)
 	//emailService := notifyService.NewEmailSenderService(dialer, templateService, config.Email.FromEmail)
 
+	log.Debug("Initialing feature", zap.String("feature", "auth"))
+	authPostgresRepository := authRepository.NewAuthRepository(pool)
+	authService := authService.NewAuthService(authPostgresRepository)
+	jwtProvider := jwt.NewJwtProvider("dsadasdsa-aasd2d3a_sdad123-5142#4q24-as", 15*time.Minute, 30*24*time.Hour)
+	authTransportHTTP := authApi.NewAuthController(authService, *jwtProvider)
+
 	log.Debug("Initialing feature", zap.String("feature", "user"))
 	userPostgresRepository := userRepository.NewUserRepository(pool)
 	userService := userService.NewUserService(userPostgresRepository)
@@ -83,11 +94,24 @@ func main() {
 		middleware.Panic(),
 	)
 
+	authMW := middleware.Auth(jwtProvider)
+	adminMW := middleware.RequireRole(domain.RoleAdmin)
+
 	apiVersionRouter := server.NewAPIVersionRouter(server.ApiVersion1)
 
-	apiVersionRouter.RegisterRouters(userTransportHttp.Routers()...)
-	apiVersionRouter.RegisterRouters(taskTransportHttp.Routers()...)
-	apiVersionRouter.RegisterRouters(statisticsTransportHttp.Routes()...)
+	apiVersionRouter.RegisterRouters(authTransportHTTP.Routers()...)
+	apiVersionRouter.RegisterRoutersWithMiddleware(
+		[]middleware.Middleware{authMW},
+		userTransportHttp.Routers()...,
+	)
+	apiVersionRouter.RegisterRoutersWithMiddleware(
+		[]middleware.Middleware{authMW},
+		taskTransportHttp.Routers()...,
+	)
+	apiVersionRouter.RegisterRoutersWithMiddleware(
+		[]middleware.Middleware{authMW, adminMW},
+		statisticsTransportHttp.Routes()...,
+	)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 	httpServer.RegisterSwagger()

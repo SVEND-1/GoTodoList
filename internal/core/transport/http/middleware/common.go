@@ -1,8 +1,13 @@
 package middleware
 
 import (
+	"TodoList/internal/core/domain"
+	core_errors "TodoList/internal/core/errors"
 	"TodoList/internal/core/logger"
+	"TodoList/internal/core/transport/http/cookies"
 	"TodoList/internal/core/transport/http/response"
+	"TodoList/internal/features/auth/authService/jwt"
+	"context"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -107,6 +112,77 @@ func Trace() Middleware {
 				zap.Duration("latency", time.Since(before)),
 			)
 
+		})
+	}
+}
+
+type contextKey struct{}
+
+var (
+	userIDKey = contextKey{}
+	roleKey   = contextKey{}
+)
+
+func UserIDFromContext(ctx context.Context) (int, bool) {
+	userID, ok := ctx.Value(userIDKey).(int)
+	return userID, ok
+}
+
+func RoleFromContext(ctx context.Context) (domain.Role, bool) {
+	role, ok := ctx.Value(roleKey).(domain.Role)
+	return role, ok
+}
+
+type tokenParser interface {
+	ParseAccessToken(tokenString string) (*jwt.Claims, error)
+}
+
+func Auth(tokenParser tokenParser) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			log := logger.FromContext(ctx)
+			responseHandler := response.NewHTTPResponseHandler(log, w)
+
+			token, err := cookies.GetTokenFromCookie(r, cookies.AccessTokenCookie)
+			if err != nil {
+				responseHandler.ErrorResponse(core_errors.ErrUnauthorized, "missing access token")
+				return
+			}
+
+			claims, err := tokenParser.ParseAccessToken(token)
+			if err != nil {
+				responseHandler.ErrorResponse(core_errors.ErrUnauthorized, "invalid or expired access token")
+				return
+			}
+
+			ctx = context.WithValue(ctx, userIDKey, claims.UserID)
+			ctx = context.WithValue(ctx, roleKey, claims.Role)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func RequireRole(allowedRoles ...domain.Role) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log := logger.FromContext(r.Context())
+			responseHandler := response.NewHTTPResponseHandler(log, w)
+
+			role, ok := RoleFromContext(r.Context())
+			if !ok {
+				responseHandler.ErrorResponse(core_errors.ErrForbidden, "role not found in context: Auth middleware must run before RequireRole")
+				return
+			}
+
+			for _, allowed := range allowedRoles {
+				if role == allowed {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
+			responseHandler.ErrorResponse(core_errors.ErrForbidden, "insufficient permissions for this action")
 		})
 	}
 }

@@ -12,7 +12,6 @@ type UserController struct {
 }
 
 type UserService interface {
-	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error)
 	GetUser(ctx context.Context, id int) (domain.User, error)
 	DeleteUser(ctx context.Context, id int) error
@@ -27,11 +26,6 @@ func NewUserController(userService UserService) *UserController {
 
 func (c *UserController) Routers() []server.Route {
 	return []server.Route{
-		{
-			Method:  http.MethodPost,
-			Path:    "/users",
-			Handler: c.CreateUser,
-		},
 		{
 			Method:  http.MethodGet,
 			Path:    "/users",

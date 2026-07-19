@@ -53,3 +53,11 @@ func (r *APIVersionRouter) WithMiddleware() http.Handler {
 		r.middlewares...,
 	)
 }
+
+func (r *APIVersionRouter) RegisterRoutersWithMiddleware(middlewares []middleware.Middleware, routes ...Route) {
+	for _, route := range routes {
+		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
+		handler := middleware.ChainMiddleware(route.WithMiddleware(), middlewares...)
+		r.ServeMux.Handle(pattern, handler)
+	}
+}
