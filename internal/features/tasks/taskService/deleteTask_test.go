@@ -57,9 +57,10 @@ func TestTaskService_DeleteTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mocks.NewMockTaskRepository(ctrl)
+			mockTx := mocks.NewMockTxManager(ctrl)
 			tt.mockBehavior(mockRepo, tt.args)
 
-			s := NewTaskService(mockRepo)
+			s := NewTaskService(mockRepo, mockTx)
 
 			if err := s.DeleteTask(tt.args.ctx, tt.args.id); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteTask() error = %v, wantErr %v", err, tt.wantErr)

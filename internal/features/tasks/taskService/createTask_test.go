@@ -64,9 +64,10 @@ func TestTaskService_CreateTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mocks.NewMockTaskRepository(ctrl)
+			mockTx := mocks.NewMockTxManager(ctrl)
 			tt.mockBehavior(mockRepo, tt.args)
 
-			s := NewTaskService(mockRepo)
+			s := NewTaskService(mockRepo, mockTx)
 
 			got, err := s.CreateTask(tt.args.ctx, tt.args.taskDomain)
 			if (err != nil) != tt.wantErr {

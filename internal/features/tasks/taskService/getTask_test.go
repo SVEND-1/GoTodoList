@@ -63,9 +63,10 @@ func TestTaskService_GetTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mocks.NewMockTaskRepository(ctrl)
+			mockTx := mocks.NewMockTxManager(ctrl)
 			tt.mockBehavior(mockRepo, tt.args)
 
-			s := NewTaskService(mockRepo)
+			s := NewTaskService(mockRepo, mockTx)
 
 			got, err := s.GetTask(tt.args.ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {

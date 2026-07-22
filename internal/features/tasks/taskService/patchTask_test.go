@@ -124,9 +124,10 @@ func TestTaskService_PatchTask(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockRepo := mocks.NewMockTaskRepository(ctrl)
+			mockTx := mocks.NewMockTxManager(ctrl)
 			tt.mockBehavior(mockRepo, tt.args)
 
-			s := NewTaskService(mockRepo)
+			s := NewTaskService(mockRepo, mockTx)
 
 			got, err := s.PatchTask(tt.args.ctx, tt.args.id, tt.args.patch)
 			if (err != nil) != tt.wantErr {

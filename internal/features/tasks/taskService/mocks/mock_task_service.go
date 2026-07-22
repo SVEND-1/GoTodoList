@@ -108,3 +108,40 @@ func (mr *MockTaskRepositoryMockRecorder) PatchTask(ctx, taskId, task interface{
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchTask", reflect.TypeOf((*MockTaskRepository)(nil).PatchTask), ctx, taskId, task)
 }
+
+// MockTxManager is a mock of TxManager interface.
+type MockTxManager struct {
+	ctrl     *gomock.Controller
+	recorder *MockTxManagerMockRecorder
+}
+
+// MockTxManagerMockRecorder is the mock recorder for MockTxManager.
+type MockTxManagerMockRecorder struct {
+	mock *MockTxManager
+}
+
+// NewMockTxManager creates a new mock instance.
+func NewMockTxManager(ctrl *gomock.Controller) *MockTxManager {
+	mock := &MockTxManager{ctrl: ctrl}
+	mock.recorder = &MockTxManagerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTxManager) EXPECT() *MockTxManagerMockRecorder {
+	return m.recorder
+}
+
+// WithinTx mocks base method.
+func (m *MockTxManager) WithinTx(ctx context.Context, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithinTx", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithinTx indicates an expected call of WithinTx.
+func (mr *MockTxManagerMockRecorder) WithinTx(ctx, fn interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithinTx", reflect.TypeOf((*MockTxManager)(nil).WithinTx), ctx, fn)
+}

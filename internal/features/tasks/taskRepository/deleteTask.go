@@ -10,11 +10,13 @@ func (r *TaskRepository) DeleteTask(ctx context.Context, taskId int) error {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
+	exec := r.pool.ExecutorFromContext(ctx)
+
 	query := `
 	DELETE FROM todoapp.tasks
 	WHERE id=$1
 `
-	cmdTag, err := r.pool.Exec(ctx, query, taskId)
+	cmdTag, err := exec.Exec(ctx, query, taskId)
 
 	if err != nil {
 		return fmt.Errorf("exec query: %w", err)

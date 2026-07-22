@@ -6,10 +6,15 @@ import (
 )
 
 type Pool interface {
-	Query(ctx context.Context, sql string, args ...any) (Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...any) Row
-	Exec(ctx context.Context, sql string, arguments ...any) (CommandTag, error)
+	Executor
 	Close()
+
+	Begin(ctx context.Context) (Tx, error)
+	BeginTx(ctx context.Context, opts *TxOptions) (Tx, error)
+	BeginFunc(ctx context.Context, f func(Tx) error) error
+	BeginTxFunc(ctx context.Context, opts *TxOptions, f func(Tx) error) error
+
+	ExecutorFromContext(ctx context.Context) Executor
 
 	OpTimeout() time.Duration
 }
@@ -28,3 +33,22 @@ type Row interface {
 type CommandTag interface {
 	RowsAffected() int64
 }
+
+type Tx interface {
+	Executor
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
+}
+
+type TxOptions struct {
+	IsolationLevel IsolationLevel
+}
+
+type IsolationLevel int
+
+const (
+	ReadUncommitted IsolationLevel = iota
+	ReadCommitted
+	RepeatableRead
+	Serializable
+)

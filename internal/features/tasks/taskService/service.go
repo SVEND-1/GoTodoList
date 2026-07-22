@@ -7,6 +7,7 @@ import (
 
 type TaskService struct {
 	taskRepository TaskRepository
+	txManager      TxManager
 }
 
 //go:generate go run github.com/golang/mock/mockgen@v1.6.0 -source=service.go -destination=mocks/mock_task_service.go -package=mocks
@@ -18,6 +19,11 @@ type TaskRepository interface {
 	PatchTask(ctx context.Context, taskId int, task domain.Task) (domain.Task, error)
 }
 
-func NewTaskService(taskRepository TaskRepository) *TaskService {
-	return &TaskService{taskRepository: taskRepository}
+//go:generate go run github.com/golang/mock/mockgen@v1.6.0 -source=service.go -destination=mocks/mock_task_service.go -package=mocks
+type TxManager interface {
+	WithinTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+func NewTaskService(taskRepository TaskRepository, manager TxManager) *TaskService {
+	return &TaskService{taskRepository: taskRepository, txManager: manager}
 }

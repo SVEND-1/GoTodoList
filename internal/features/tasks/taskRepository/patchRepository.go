@@ -13,13 +13,15 @@ func (r *TaskRepository) PatchTask(ctx context.Context, taskId int, task domain.
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
+	exec := r.pool.ExecutorFromContext(ctx)
+
 	query := `
 	UPDATE todoapp.tasks
 	SET title=$1,description=$2,completed=$3,completed_at=$4,version = version + 1
 	WHERE id=$5 AND version = $6
 	RETURNING id,version,title, description,completed,created_at,completed_at,author_user_id;
 `
-	row := r.pool.QueryRow(
+	row := exec.QueryRow(
 		ctx, query,
 		task.Title, task.Description, task.Completed, task.CompletedAt,
 		taskId, task.Version,

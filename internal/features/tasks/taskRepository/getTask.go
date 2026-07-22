@@ -13,11 +13,13 @@ func (r *TaskRepository) GetTask(ctx context.Context, taskId int) (domain.Task, 
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
+	exec := r.pool.ExecutorFromContext(ctx)
+
 	query := `
 	SELECT id,version,title,description,completed,created_at,completed_at,author_user_id FROM todoapp.tasks
 	WHERE id = $1;
 `
-	row := r.pool.QueryRow(ctx, query, taskId)
+	row := exec.QueryRow(ctx, query, taskId)
 
 	var result domain.Task
 	err := row.Scan(

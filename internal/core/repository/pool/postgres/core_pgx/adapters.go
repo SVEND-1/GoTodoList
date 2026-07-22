@@ -29,19 +29,38 @@ type pgxCommandTag struct {
 	pgconn.CommandTag
 }
 
+type pgxTx struct {
+	pgx.Tx
+}
+
 func mapError(err error) error {
 	const (
 		pgxViolatesForeignKeyErrorCode = "23503"
+		pgxSerializationFailureCode    = "40001"
+		pgxDeadlockDetectedCode        = "40P01"
+		pgxUniqueViolationCode         = "23505"
+		pgxNotNullViolationCode        = "23502"
 	)
+
 	if errors.Is(err, pgx.ErrNoRows) {
 		return postgres.ErrNoRows
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		if pgErr.Code == pgxViolatesForeignKeyErrorCode { //При попытки создать задачу и передать userId которого нету в бд
+		switch pgErr.Code {
+		case pgxViolatesForeignKeyErrorCode:
 			return fmt.Errorf("%v: %w", err, postgres.ErrViolatesForeignKey)
+		case pgxSerializationFailureCode, pgxDeadlockDetectedCode:
+			return fmt.Errorf("%v: %w", err, postgres.ErrTransactionConflict)
+		case pgxUniqueViolationCode:
+			return fmt.Errorf("%v: %w", err, errors.New("unique constraint violation"))
+		case pgxNotNullViolationCode:
+			return fmt.Errorf("%v: %w", err, errors.New("not null constraint violation"))
+		default:
+			return fmt.Errorf("database error (code %s): %v", pgErr.Code, err)
 		}
 	}
-	return fmt.Errorf("%v: %w", err, pgx.ErrNoRows)
+
+	return err
 }

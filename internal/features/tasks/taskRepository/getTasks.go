@@ -10,6 +10,8 @@ func (r *TaskRepository) GetTasks(ctx context.Context, userId *int, limit *int, 
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
+	exec := r.pool.ExecutorFromContext(ctx)
+
 	query := `
 	SELECT id,version,title,description,completed,created_at,completed_at,author_user_id FROM todoapp.tasks
 	%s
@@ -25,7 +27,7 @@ func (r *TaskRepository) GetTasks(ctx context.Context, userId *int, limit *int, 
 		query = fmt.Sprintf(query, "")
 	}
 
-	rows, err := r.pool.Query(ctx, query, args...)
+	rows, err := exec.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("select tasks: %w", err)
 	}

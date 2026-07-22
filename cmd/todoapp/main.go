@@ -58,6 +58,8 @@ func main() {
 	}
 	defer pool.Close()
 
+	txManager := core_pgx.NewPgxTxManager(pool)
+
 	//На будущее готовый email
 	//templateService := &notifyService.TemplateServiceImp{}
 	//dialer := gomail.NewDialer(config.Email.Host, config.Email.Port, config.Email.Username, config.Email.Password)
@@ -76,7 +78,7 @@ func main() {
 
 	log.Debug("Initializing feature", zap.String("feature", "task"))
 	taskPostgresRepository := taskRepository.NewTaskRepository(pool)
-	taskService := taskService.NewTaskService(taskPostgresRepository)
+	taskService := taskService.NewTaskService(taskPostgresRepository, txManager)
 	taskTransportHttp := taskApi.NewTaskController(taskService)
 
 	log.Debug("Initializing feature", zap.String("feature", "statistics"))
